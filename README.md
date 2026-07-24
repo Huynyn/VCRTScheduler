@@ -1,19 +1,5 @@
-# VCRT Shift Scheduler
-
-A locally-hosted web app for the **University of Ottawa Volunteer Crisis
-Response Team (VCRT)**. It collects each first responder's weekly shift
-preferences, then generates the **top three valid weekly schedules** and
-exports them to a printable PDF.
-
-Built with **React 18 + Vite + Tailwind CSS**. Everything runs in your
-browser — no server, no database, no internet connection required. Your
-roster is saved automatically to the browser's local storage.
-
----
-
 ## Quick start
-
-You need [Node.js](https://nodejs.org/) 18 or newer.
+Need [Node.js](https://nodejs.org/) 18 or newer.
 
 ```bash
 npm install      # install dependencies (first time only)
@@ -43,22 +29,6 @@ npm run preview   # preview the production build locally
 ```
 
 ---
-
-## Importing availability from a Microsoft Form
-
-Instead of typing 48 people in by hand, responders can fill in a **Microsoft
-Form**; a **Power Automate** flow drops each response as a row in an **Excel**
-table; you download that workbook and drop it on **Import from Microsoft
-Forms** (step 1 of the app).
-
-- **Full setup guide:** [`docs/POWER_AUTOMATE.md`](docs/POWER_AUTOMATE.md) — the
-  form questions, the Excel table, the three-action flow, and the one expression
-  you need for multi-answer questions.
-- **Workbook the flow writes into:**
-  [`docs/VCRT-availability-responses-template.xlsx`](docs/VCRT-availability-responses-template.xlsx)
-  (sheet `Responses`, table `Responses`, plus a *Read me* and the 21 shift labels
-  to paste into the form).
-
 ### Special requests are flagged, never auto-applied
 
 Four answers are treated as **requests that need a coordinator's decision**, and
@@ -71,14 +41,8 @@ the importer holds them:
 | **Would like to work with X** | adds a *Schedule together* rule | no rule |
 | **Would rather not work with X** | adds a *Keep apart* rule | no rule |
 
-Each one is shown with the person's stated reason and the Excel row it came
-from. Nothing takes effect until you approve it, and anything left undecided is
-treated as declined — a request can't reach the schedule unreviewed. The
-importer also reports what it couldn't read (an unrecognised shift label, or a
-"work with" name that isn't among the responses).
 
 ---
-
 ## How it works
 
 ### The rules it enforces
@@ -140,7 +104,7 @@ availability.
 ### When a valid schedule isn't possible: best-effort mode
 
 If no schedule can be built that satisfies every hard rule, the solver
-**doesn't stop** — it returns the **three closest partial schedules** so the
+**doesn't stop** — it returns the **closest partial schedules** so the
 coordinator can see how bad the gap is, and a **"who to contact"** panel
 listing the responders most likely to unlock a valid schedule if they add
 some availability. Priorities when suggesting contacts:
@@ -149,13 +113,6 @@ some availability. Priorities when suggesting contacts:
 2. Missing bilingual on a shift.
 3. Not enough people on a shift.
 
-Within each gap, the candidate list ranks by proximity of their existing
-availability (someone who's already available the shift before or the shift
-after is a much smaller ask than someone completely new to that day). The
-same list is appended to the PDF as a final page for offline reference.
-The soft rules (overnight gender mix, avoidance pairs, weekend doubles) are
-**never** treated as blocking — they're always relaxed first, before the
-solver ever falls back to partial mode.
 - **Sensible use of non-negotiables.** A responder is **flagged** (a warning,
   not an error) if their non-negotiables look over-used — specifically if they
   mark **more than 12h** as non-negotiable, or mark **6h+** non-negotiable
@@ -174,7 +131,7 @@ The scheduler places people in priority order:
    painting itself into a corner.
 3. **High-preference slots** are strongly favoured when filling the rest.
 
-Under the hood it's a **randomized greedy solver with restarts and a repair
+**Randomized greedy solver with restarts and a repair
 pass**. It builds many candidate schedules, keeps only the fully valid ones,
 de-duplicates them, scores each (rewarding honoured high-preferences and
 balanced coverage), and returns the three best distinct schedules.
@@ -213,20 +170,6 @@ of available people) so you can loosen those slots before generating.
 If the solver still can't assemble a schedule after exhausting its attempts,
 it reports that and suggests opening up more "not available" slots —
 especially overnight and weekend shifts, which are usually the tightest.
-
----
-
-## Re-branding the colours (requirement 8)
-
-The palette mirrors the medical/EMS reference app: a clean semantic scheme
-(`primary` / `secondary` / `success` / `warning` / `danger`), the **Inter**
-body font, and **JetBrains Mono** accents. A uOttawa **garnet** brand bar runs
-across the header and the top of each PDF page.
-
-Everything lives in **`tailwind.config.js`**. To recolour the app, edit the
-`primary` scale (this is also the supervisor accent colour in the PDF). The
-garnet accent is the `garnet` entry in the same file. No component code needs
-to change.
 
 ---
 
@@ -271,7 +214,7 @@ vcrt-scheduler/
         └── scheduling/        SchedulePanel, ScheduleResults, FeasibilityReport…
 ```
 
-### Where to extend things
+### Where to change things
 
 - **Change shift times, hours, or coverage limits** → `src/constants/schedule.js`.
 - **Tune the solver** (how hard it tries, how it scores) →
@@ -282,23 +225,3 @@ vcrt-scheduler/
   `src/components/responders/ResponderForm.jsx`.
 
 ---
-
-## PDF output (requirement 9)
-
-The export reproduces the official **Weekly Schedule — VCRT-ÉBIC** sheet: the
-crest top-left, the blue *Weekly Schedule* / garnet *VCRT-ÉBIC* title block
-top-right, the term underneath, and a black-ruled grid (Time column + seven
-days) with a blue header row and one alternating-striped line per name. Names
-are auto-fitted so they always sit on a **single line** — never wrapped.
-
-Legend, matching the sheet:
-
-- **(S)** = shift supervisor
-- **(R)** in blue = new member
-- *Italic* name = French + English speaker (bilingual)
-- Non-italicised name = English speaker
-
-The **Semester** (Fall / Winter) and **Year** selectors next to *Download PDF*
-set the subtitle and the filename — they default to the term currently being
-planned (`Winter` in Jan–Apr, `Fall` from May on). One page per schedule (top
-3); in best-effort mode the "who to contact" list is appended as a final page.
