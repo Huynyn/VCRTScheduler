@@ -121,8 +121,7 @@ some availability. Priorities when suggesting contacts:
   the coordinator to double-check. Flags appear live in the form, on the
   roster card, and in the feasibility report.
 
-### The matching strategy (requirement 6)
-
+### The matching strategy 
 The scheduler places people in priority order:
 
 1. **Non-negotiables first** — these are locked in before anything else.
