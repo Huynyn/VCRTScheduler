@@ -159,7 +159,7 @@ export default function UnlockPanel({ result }) {
                 responders
               </span>
             }
-            subtitle="Even if everyone opened up all of their availability, the roster is too small to cover the week. This isn't something a phone call can fix; you need more people. At a minimum, add:"
+            subtitle="Even if everyone opened up all of their availability, the roster is too small to cover the week (e.g., not enough supervisor hours). At a minimum, add:"
           />
           <CardBody className="space-y-4">
             <CapacityShortfall capacity={capacity} />
@@ -234,9 +234,7 @@ export default function UnlockPanel({ result }) {
         <div className="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
           <Lock size={14} className="mt-0.5 shrink-0 text-gray-400" />
           <span>
-            Every ask below is only to <strong>open up one more shift</strong>, never to work extra
-            hours beyond their week, and never to change their role, languages or gender. Each
-            resulting schedule is fully staffed and keeps everyone within their weekly hours.
+            Below is an example shift that is possible if you asked said people if they can open up their availibilitiy while ensuring that nobody goes over their weekly commitment (i.e., 6 or 12)
           </span>
         </div>
 
