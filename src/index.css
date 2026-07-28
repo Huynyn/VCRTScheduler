@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Base styles — adapted from the provided uOttawa medical-app stylesheet.
+--------------------------------------------------------------------------- */
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --shadow-color: 220deg 3% 15%;
+    --shadow-strength: 1%;
+  }
+
+  body {
+    @apply bg-secondary-50 text-secondary-700 font-sans antialiased;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  @media print {
+    @page {
+      margin: 0.5in;
+    }
+    .no-print {
+      display: none !important;
+    }
+    .print-break-inside-avoid {
+      break-inside: avoid;
+    }
+    .print-break-after {
+      break-after: page;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Component classes — buttons, forms, cards, alerts (from provided CSS).
+--------------------------------------------------------------------------- */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-primary-500 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  .btn-secondary {
+    @apply btn bg-secondary-500 text-white hover:bg-secondary-700 focus:ring-secondary-500;
+  }
+  .btn-success {
+    @apply btn bg-success-500 text-white hover:bg-success-700 focus:ring-success-500;
+  }
+  .btn-warning {
+    @apply btn bg-warning-500 text-white hover:bg-warning-700 focus:ring-warning-500;
+  }
+  .btn-danger {
+    @apply btn bg-danger-500 text-white hover:bg-danger-700 focus:ring-danger-500;
+  }
+  .btn-outline {
+    @apply btn border-2 border-gray-300 text-gray-600 hover:bg-gray-100 focus:ring-gray-400;
+  }
+  .btn-ghost {
+    @apply btn text-gray-600 hover:bg-gray-100 focus:ring-gray-400;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+  }
+  .form-select {
+    @apply form-input pr-8 cursor-pointer bg-white;
+  }
+  .form-checkbox {
+    @apply h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500;
+  }
+  .form-label {
+    @apply block text-sm font-medium text-gray-600 mb-1;
+  }
+  .form-help {
+    @apply text-sm text-gray-500 mt-1;
+  }
+  .form-hint {
+    @apply text-[11px] text-gray-400 mt-1 leading-tight;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-card border border-gray-200;
+  }
+  .card-header {
+    @apply px-6 py-4 border-b border-gray-200;
+  }
+  .card-body {
+    @apply px-6 py-4;
+  }
+  .card-footer {
+    @apply px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg;
+  }
+
+  .alert {
+    @apply p-4 rounded-lg border-l-4;
+  }
+  .alert-info {
+    @apply alert bg-blue-50 border-blue-400 text-blue-800;
+  }
+  .alert-success {
+    @apply alert bg-success-50 border-success-400 text-success-800;
+  }
+  .alert-warning {
+    @apply alert bg-warning-50 border-warning-400 text-warning-800;
+  }
+  .alert-error {
+    @apply alert bg-danger-50 border-danger-400 text-danger-800;
+  }
+
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-gray-200 border-t-primary-600;
+  }
+
+  .responsive-table {
+    @apply w-full overflow-x-auto;
+  }
+  .responsive-table table {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+  .responsive-table th {
+    @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50;
+  }
+  .responsive-table td {
+    @apply px-4 py-3 text-sm text-gray-800;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

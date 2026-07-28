@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output (produced by CI on GitHub Pages)
+dist/
+
+# Logs & OS/editor cruft
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local env files
+.env
+.env.local
