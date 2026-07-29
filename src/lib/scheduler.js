@@ -16,6 +16,7 @@ import { checkFeasibility } from './feasibility.js';
 import { evaluate, signature, makeRng } from './scoring.js';
 import { pairKey, makePair } from './pair.js';
 import { buildSuggestions } from './suggestions.js';
+import { solveExact } from './exactSolver.js';
 
 const NIGHT_SHIFT_ID = SHIFTS.find((s) => s.kind === 'night').id;
 const isNightSlot = (id) => parseSlot(id).shift === NIGHT_SHIFT_ID;
@@ -473,6 +474,16 @@ export function generateSchedules(responders, options = {}) {
     // as soon as it finds one valid schedule; this is really the ceiling for
     // confirming that a particular change DOESN'T work.
     reachoutCheckMs = 1500,
+    // Completeness backstop: after the greedy pass, if NO fully valid schedule was
+    // found, ask the exact solver whether one exists and adopt it if so. The
+    // greedy is incomplete on tight rosters, so without this the app can report
+    // "no complete schedule" (and drop real reach-out fixes) when a valid schedule
+    // is actually reachable. Kept optional so callers can disable it.
+    exactFallback = true,
+    // Time budget for that exact backstop. Small by default in the fast
+    // reach-out reachability checks (stopOnFirstValid), larger for a top-level
+    // solve where a correct verdict is worth a moment's wait.
+    exactBudgetMs = stopOnFirstValid ? 1200 : 3000,
     // Optional progress callback, called with a fraction in [0, 1].
     onProgress = null,
   } = options;
@@ -590,6 +601,25 @@ export function generateSchedules(responders, options = {}) {
     all = [...polished.values()].sort((a, b) => b.eval.score - a.eval.score);
   }
 
+  // Completeness backstop. The greedy above is fast but INCOMPLETE: on tight
+  // rosters it can fail to construct a valid schedule even when one exists (it
+  // never lands the exact per-shift partition a zero-slack week demands). If it
+  // produced no valid schedule, ask the exact solver whether one is reachable and
+  // adopt it — so the app never claims "no complete schedule" when there is one,
+  // and (crucially) the reach-out reachability checks below become sound.
+  if (exactFallback && !all.some((v) => v.eval.valid)) {
+    report(0.49);
+    const ex = solveExact(responders, { avoidancePairs, budgetMs: exactBudgetMs });
+    if (ex.status === 'sat') {
+      const ev = evaluate(ex.assignment, responders, avoidancePairs, preferredPairs);
+      if (ev.valid) {
+        const sig = signature(ex.assignment);
+        if (!found.has(sig)) found.set(sig, { assignment: ex.assignment, eval: ev });
+        all = [...found.values()].sort((a, b) => b.eval.score - a.eval.score);
+      }
+    }
+  }
+
   const valids = all.filter((v) => v.eval.valid);
   const partials = all.filter((v) => !v.eval.valid);
   // Show as many schedules as possible up to `want`: every valid one first,
@@ -677,6 +707,20 @@ export function generateSchedules(responders, options = {}) {
 
   report(1);
   return result;
+}
+
+// Wrap a bare responderId->pattern assignment (e.g. from the exact solver) in the
+// same schedule shape the greedy path produces, so the UI and the reach-out
+// placement check can consume it uniformly.
+function scheduleFromAssignment(assignment, byId, responders, avoidancePairs, preferredPairs) {
+  const metrics = evaluate(assignment, responders, avoidancePairs, preferredPairs);
+  return {
+    rank: 1,
+    assignment,
+    slots: buildSlotView(assignment, byId),
+    metrics,
+    valid: metrics.valid,
+  };
 }
 
 // Turn a responder->pattern map into a slot->responders view for rendering.
@@ -1139,11 +1183,40 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
     preferredPairs,
     noUnlockSearch: true,
   };
+  const byId = Object.fromEntries(responders.map((r) => [r.id, r]));
+
+  // Does opening the given shifts make a COMPLETE, valid schedule possible? This
+  // is the heart of "make a complete schedule possible", so it must not miss a
+  // reachable schedule. We ask the exact solver first — it is complete, and a
+  // real fix usually verifies in milliseconds while a definitive 'unsat' rejects
+  // a non-fix outright — and only fall back to the greedy when the exact search
+  // runs out of time ('unknown'). Relying on the greedy alone (as before) is
+  // exactly what dropped genuine fixes from the list.
   const solveWith = (opens) => {
-    const t = Math.min(checkBudgetMs, timeLeft());
-    if (t < 300) return null;
-    const res = generateSchedules(withOpened(responders, opens), { ...solveOpts, timeBudgetMs: t });
-    const valid = res.schedules.find((s) => s.valid);
+    const opened = withOpened(responders, opens);
+
+    const tExact = Math.min(checkBudgetMs, timeLeft());
+    let valid = null;
+    if (tExact >= 300) {
+      const ex = solveExact(opened, { avoidancePairs, budgetMs: tExact });
+      if (ex.status === 'sat') {
+        valid = scheduleFromAssignment(ex.assignment, byId, responders, avoidancePairs, preferredPairs);
+      } else if (ex.status === 'unsat') {
+        return null; // provably no valid schedule with this opening — done.
+      }
+    }
+
+    if (!valid) {
+      const tGreedy = Math.min(checkBudgetMs, timeLeft());
+      if (tGreedy < 300) return null;
+      const res = generateSchedules(opened, {
+        ...solveOpts,
+        timeBudgetMs: tGreedy,
+        exactFallback: false, // exact already tried above; don't repeat it
+      });
+      valid = res.schedules.find((s) => s.valid) || null;
+    }
+
     if (valid && opens.every(({ id, slot }) => (valid.slots[slot] || []).some((p) => p.id === id))) {
       return valid;
     }
