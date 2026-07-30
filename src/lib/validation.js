@@ -36,7 +36,7 @@ export function preferenceHours(responder) {
 }
 
 // Soft flags about how a responder used non-negotiables. These never block a
-// schedule from being generated — they prompt the coordinator to double-check
+// schedule from being generated - they prompt the coordinator to double-check
 // that the non-negotiables are genuinely necessary.
 //
 // Returns string[] (empty when nothing is off).
@@ -46,11 +46,11 @@ export function nonNegotiableFlags(responder) {
 
   if (nonNeg > NONNEG_HOURS_LIMIT) {
     flags.push(
-      `${nonNeg}h marked non-negotiable — that already exceeds a ${NONNEG_HOURS_LIMIT}h week, so they can't all be honoured. Keep only the shifts that are truly mandatory.`
+      `${nonNeg}h marked non-negotiable - that already exceeds a ${NONNEG_HOURS_LIMIT}h week, so they can't all be honoured. Keep only the shifts that are truly mandatory.`
     );
   } else if (nonNeg >= NONNEG_FLAG_TRIGGER && other > OTHER_AVAIL_HOURS_LIMIT) {
     flags.push(
-      `Has ${nonNeg}h non-negotiable but also ${other}h of other availability. Non-negotiables are meant for responders with no other option — consider lowering some to "high preference".`
+      `Has ${nonNeg}h non-negotiable but also ${other}h of other availability. Non-negotiables are meant for responders with no other option - consider lowering some to "high preference".`
     );
   }
 

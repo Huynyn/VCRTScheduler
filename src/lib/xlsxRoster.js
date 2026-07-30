@@ -19,10 +19,10 @@ import { makeResponder } from '../context/ResponderContext.jsx';
 // Excel import / export for the responder roster.
 //
 // Export produces one workbook with:
-//   • a "Summary" sheet — every responder as a row (ordered by scheduling
+//   • a "Summary" sheet - every responder as a row (ordered by scheduling
 //     importance) and one column per shift, each cell a coloured box:
 //       green = available, blue = high preference, red = non-negotiable.
-//   • one sheet per responder — their details plus a day × shift availability
+//   • one sheet per responder - their details plus a day × shift availability
 //     grid, each cell coloured the same way and labelled in text.
 //
 // Import reads that same workbook back. The per-responder sheets are the
@@ -55,7 +55,7 @@ const PREF_TEXT = {
   [PREF.AVAIL]: 'Available',
   [PREF.HIGH]: 'High preference',
   [PREF.NONNEG]: 'Non-negotiable',
-  [PREF.UNAVAIL]: '—',
+  [PREF.UNAVAIL]: '-',
 };
 
 const argb = (hex) => `FF${hex}`;
@@ -102,7 +102,6 @@ const TEXT_TO_PREF = {
   'not available': PREF.UNAVAIL,
   unavailable: PREF.UNAVAIL,
   unavail: PREF.UNAVAIL,
-  '—': PREF.UNAVAIL,
   '-': PREF.UNAVAIL,
   '': PREF.UNAVAIL,
 };
@@ -164,7 +163,7 @@ function buildSummarySheet(wb, ordered) {
   const totalCols = LEAD_COLS.length + ALL_SLOTS.length;
   ws.mergeCells(1, 1, 1, totalCols);
   const title = ws.getCell(1, 1);
-  title.value = 'VCRT Responders — Availability & Preferences';
+  title.value = 'VCRT Responders - Availability & Preferences';
   title.font = { bold: true, size: 14, color: { argb: argb('8D1D2C') } };
   title.alignment = { horizontal: 'left', vertical: 'middle' };
 
@@ -449,7 +448,7 @@ export function parseRosterWorkbook(wb) {
     );
   }
 
-  // Flag duplicate names — imports are matched by name elsewhere in the app.
+  // Flag duplicate names - imports are matched by name elsewhere in the app.
   const seen = new Map();
   for (const r of responders) {
     const key = r.name.toLowerCase();

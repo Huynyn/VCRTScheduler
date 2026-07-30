@@ -1,6 +1,6 @@
 // Manual reproduction on a real exported roster (an .xlsx from the app's own
-// "export roster" feature). Not part of the automated suite — it needs a file on
-// disk — but handy for re-checking the "make a complete schedule possible" fix
+// "export roster" feature). Not part of the automated suite - it needs a file on
+// disk - but handy for re-checking the "make a complete schedule possible" fix
 // against a real team.
 //
 //   node test/full.mjs [path-to-roster.xlsx]
@@ -28,7 +28,7 @@ const result = generateSchedules(responders, {
   reachoutBudgetMs: 25000,
   reachoutCheckMs: 1500,
 });
-console.log(`Solved in ${((Date.now() - t0) / 1000).toFixed(1)}s — ok=${result.ok}, valid schedules found=${result.stats?.validFound}`);
+console.log(`Solved in ${((Date.now() - t0) / 1000).toFixed(1)}s - ok=${result.ok}, valid schedules found=${result.stats?.validFound}`);
 
 const reach = result.reachout;
 if (reach) {

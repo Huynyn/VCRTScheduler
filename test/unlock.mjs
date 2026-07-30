@@ -23,8 +23,8 @@ const check = (label, cond) => {
 const fullPrefs = () => Object.fromEntries(ALL_SLOTS.map((id) => [id, PREF.AVAIL]));
 const emptyPrefs = () => Object.fromEntries(ALL_SLOTS.map((id) => [id, PREF.UNAVAIL]));
 
-// Keep exactly two available people at `slot` — a bilingual supervisor (covers
-// both role needs) plus one other — so the shift has sup + bil but is one head
+// Keep exactly two available people at `slot` - a bilingual supervisor (covers
+// both role needs) plus one other - so the shift has sup + bil but is one head
 // short of the minimum. Everyone else becomes unavailable there.
 function makeShortByOne(responders, slot) {
   // "Present" = anyone the slot could hold: available, high-pref, OR
@@ -139,7 +139,7 @@ console.log('\n[4] A fix never puts a 12h person on only 6h (respects committed 
   makeShortByOne(responders, gap);
   // A 12h rookie who normally works one overnight (Wed) and is unavailable for
   // the day gap. If asked to open the gap, the only week they could form is that
-  // single 6h day shift — which breaks their 12h commitment — so the fix must NOT
+  // single 6h day shift - which breaks their 12h commitment - so the fix must NOT
   // offer them. This is exactly the reported bug.
   responders.push({ id: 'only6', name: 'Only Sixer', role: 'rookie', bilingual: false, gender: 'male', hours: 12, prefs: { ...emptyPrefs(), [slotId('Wed', 'night')]: PREF.AVAIL } });
   // A legitimate fixer: a 6h rookie normally on another day shift who can move to

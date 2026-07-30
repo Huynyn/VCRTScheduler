@@ -156,7 +156,7 @@ export default function PairingRules() {
                 icon={<UserCheck size={17} />}
                 tone="success"
                 title="Schedule together"
-                hint="Try to put these two on the same shift — matching even one shift counts."
+                hint="Try to put these two on the same shift - matching even one shift counts."
                 pairs={preferredPairs}
                 byId={byId}
                 sorted={sorted}

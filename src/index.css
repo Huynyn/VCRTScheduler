@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
-   Base styles — adapted from the provided uOttawa medical-app stylesheet.
+   Base styles - adapted from the provided uOttawa medical-app stylesheet.
 --------------------------------------------------------------------------- */
 @layer base {
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -51,7 +51,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Component classes — buttons, forms, cards, alerts (from provided CSS).
+   Component classes - buttons, forms, cards, alerts (from provided CSS).
 --------------------------------------------------------------------------- */
 @layer components {
   .btn {

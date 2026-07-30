@@ -10,7 +10,7 @@ import { useResponders } from '../../context/ResponderContext.jsx';
 
 // The solve runs in a Web Worker (keeps the UI responsive) and drives a real
 // progress bar. It has two phases: first it hunts for the best complete
-// schedule; then, if none is fully valid, it runs a thorough reach-out search —
+// schedule; then, if none is fully valid, it runs a thorough reach-out search -
 // actually re-solving the week many times to find who to contact so a complete
 // schedule becomes possible. Both get generous budgets: a correct, thorough
 // answer is worth the wait, and the bar tells the user it's still working.

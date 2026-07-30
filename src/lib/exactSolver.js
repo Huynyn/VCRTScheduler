@@ -9,7 +9,7 @@ import {
 import { buildPatterns } from './patterns.js';
 
 // ---------------------------------------------------------------------------
-// Exact feasibility solver — the completeness backstop for the heuristic greedy.
+// Exact feasibility solver - the completeness backstop for the heuristic greedy.
 //
 // The randomised greedy in scheduler.js is fast and produces diverse, well-scored
 // schedules, but it is INCOMPLETE: on tight rosters (e.g. when supplied hours
@@ -28,11 +28,11 @@ import { buildPatterns } from './patterns.js';
 // one supervisor and one bilingual, and no keep-apart pair shares a shift.
 //
 // Returns { status, assignment }:
-//   status 'sat'     — a fully valid schedule exists; `assignment` is one such
+//   status 'sat'     - a fully valid schedule exists; `assignment` is one such
 //                      responderId -> slot[] map.
-//   status 'unsat'   — the search space was explored exhaustively (within the
+//   status 'unsat'   - the search space was explored exhaustively (within the
 //                      node cap) and no valid schedule exists. Definitive.
-//   status 'unknown' — the time/node budget ran out before either was proven.
+//   status 'unknown' - the time/node budget ran out before either was proven.
 //
 // A 'sat' assignment always passes evaluate().valid: every responder is placed on
 // an exact-hours pattern (so nobody is unplaced or under-hours), every shift is
@@ -77,7 +77,7 @@ export function solveExact(responders, opts = {}) {
   for (const r of responders) {
     const list = buildPatterns(r).patterns.map((p) => p.map((id) => SLOT_INDEX[id]));
     // A responder with no legal pattern can never be placed at their committed
-    // hours, so no valid schedule exists — definitive.
+    // hours, so no valid schedule exists - definitive.
     if (list.length === 0) {
       return { status: 'unsat', assignment: null, nodes: 0, ms: 0, reason: `${r.name} has no legal weekly pattern` };
     }

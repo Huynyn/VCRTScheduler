@@ -133,7 +133,7 @@ export const PREF_META = {
   },
   [PREF.UNAVAIL]: {
     label: 'Not available',
-    short: '—',
+    short: '-',
     weight: 0,
     color: 'bg-gray-100',
     textColor: 'text-gray-400',

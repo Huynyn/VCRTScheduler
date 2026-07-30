@@ -5,7 +5,7 @@ import ScheduleTable from './ScheduleTable.jsx';
 
 // Shown when the "keep apart" rules are themselves what's blocking a complete
 // schedule: a fully valid week IS possible, but only if one or more keep-apart
-// pairs are relaxed. Keep-apart is a hard rule, so we never silently break it —
+// pairs are relaxed. Keep-apart is a hard rule, so we never silently break it -
 // instead we tell the coordinator exactly which decision to reconsider and show
 // the complete schedule that relaxing it unlocks.
 export default function ApartBlockPanel({ apartBlock }) {
@@ -25,8 +25,8 @@ export default function ApartBlockPanel({ apartBlock }) {
         }
         subtitle={
           many
-            ? 'A fully valid schedule is possible, but only if you relax keeping these pairs apart. Keep-apart is a hard rule, so nothing below forces them together — this is a decision for you to make.'
-            : 'A fully valid schedule is possible, but only if you relax keeping this pair apart. Keep-apart is a hard rule, so nothing below forces them together — this is a decision for you to make.'
+            ? 'A fully valid schedule is possible, but only if you relax keeping these pairs apart. Keep-apart is a hard rule, so nothing below forces them together - this is a decision for you to make.'
+            : 'A fully valid schedule is possible, but only if you relax keeping this pair apart. Keep-apart is a hard rule, so nothing below forces them together - this is a decision for you to make.'
         }
       />
       <CardBody className="space-y-3">
@@ -38,7 +38,7 @@ export default function ApartBlockPanel({ apartBlock }) {
             >
               <Users size={15} className="mt-0.5 shrink-0 text-warning-600" />
               <span>
-                <span className="font-semibold">{p.names}</span> — their availability leaves no way
+                <span className="font-semibold">{p.names}</span> - their availability leaves no way
                 to cover the week while also keeping them apart.
               </span>
             </li>

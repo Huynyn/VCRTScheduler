@@ -7,7 +7,7 @@ import { useResponders } from '../../context/ResponderContext.jsx';
 import { makePair, pairKey } from '../../lib/pair.js';
 import { exportSchedulesPdf, currentTerm, termLabel, SEMESTERS } from '../../lib/pdfExport.js';
 
-// "Schedule together" status for each preferred pair — clearly shows when a pair
+// "Schedule together" status for each preferred pair - clearly shows when a pair
 // is together in this option, and when they simply can't be paired this week.
 function TogetherPanel({ schedule, result, nameById }) {
   const overlaps = schedule.metrics.preferredOverlaps || [];
@@ -42,17 +42,17 @@ function TogetherPanel({ schedule, result, nameById }) {
                 {together ? (
                   <span className="text-gray-500">
                     {' '}
-                    — together on {o.shared} shared shift{o.shared === 1 ? '' : 's'} in this option.
+                    - together on {o.shared} shared shift{o.shared === 1 ? '' : 's'} in this option.
                   </span>
                 ) : anywhere ? (
                   <span className="text-gray-500">
                     {' '}
-                    — not together in this option, but they are paired up in another option below.
+                    - not together in this option, but they are paired up in another option below.
                   </span>
                 ) : (
                   <span className="text-danger-600">
                     {' '}
-                    — couldn&apos;t be scheduled together in any of the {result.schedules.length}{' '}
+                    - couldn&apos;t be scheduled together in any of the {result.schedules.length}{' '}
                     options. Their availability doesn&apos;t overlap on a shift with room for both.
                   </span>
                 )}
@@ -65,7 +65,7 @@ function TogetherPanel({ schedule, result, nameById }) {
   );
 }
 
-// "Keep apart" status for each avoidance pair — the mirror image of the
+// "Keep apart" status for each avoidance pair - the mirror image of the
 // "Scheduled together" panel. Keep-apart is a hard rule, so in a valid schedule
 // every pair here is a success; a partial schedule that couldn't separate a pair
 // flags it so the coordinator sees exactly which one and where.
@@ -105,11 +105,11 @@ function KeptApartPanel({ schedule, avoidancePairs, nameById }) {
               <div>
                 <span className="font-medium text-secondary-700">{names}</span>
                 {apart ? (
-                  <span className="text-gray-500"> — successfully kept apart; they share no shift.</span>
+                  <span className="text-gray-500"> - successfully kept apart; they share no shift.</span>
                 ) : (
                   <span className="text-danger-600">
                     {' '}
-                    — ⚠ still together on {shared} shift{shared === 1 ? '' : 's'} in this option
+                    - ⚠ still together on {shared} shift{shared === 1 ? '' : 's'} in this option
                     (only possible in a partial schedule). See the highlighted cells below.
                   </span>
                 )}

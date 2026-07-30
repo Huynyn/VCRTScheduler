@@ -4,7 +4,7 @@ import { DAYS, DAY_LABELS, SHIFTS, slotId, MAX_PER_SHIFT } from '../constants/sc
 import logoUrl from '../assets/vcrt-logo-transparent.png';
 
 // ---------------------------------------------------------------------------
-// PDF export styled after the official "Weekly Schedule — VCRT-ÉBIC" sheet:
+// PDF export styled after the official "Weekly Schedule - VCRT-ÉBIC" sheet:
 // crest top-left; big blue "Weekly Schedule" + garnet "VCRT-ÉBIC" top-right;
 // black-bordered grid with a blue header row and a narrow Time column;
 // one striped line per name; (S) = supervisor, blue (R) = rookie,
@@ -103,7 +103,7 @@ function drawHeader(doc, logo, { term, optionLabel, generatedAt, partial }) {
   if (partial) {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...GARNET);
-    doc.text('PARTIAL SCHEDULE — see contact list on the last page', MARGIN + (logo ? 84 : 0), 84);
+    doc.text('PARTIAL SCHEDULE - see contact list on the last page', MARGIN + (logo ? 84 : 0), 84);
     doc.setFont('helvetica', 'normal');
   }
   doc.setTextColor(...BLACK);
@@ -258,7 +258,7 @@ export async function exportSchedulesPdf(result, meta = {}) {
     doc.setFontSize(9.5);
     doc.setTextColor(...MUTED);
     doc.text(
-      'Ranked by impact. You can only ask people to change their AVAILABILITY — role, languages and',
+      'Ranked by impact. You can only ask people to change their AVAILABILITY - role, languages and',
       MARGIN,
       60
     );
@@ -346,7 +346,7 @@ export async function exportSchedulesPdf(result, meta = {}) {
         if (!ask.candidates.length) {
           doc.setFont('helvetica', 'italic');
           doc.setFontSize(8.5);
-          doc.text('No one can fill this by opening availability — bring in someone new.', MARGIN + 20, y);
+          doc.text('No one can fill this by opening availability - bring in someone new.', MARGIN + 20, y);
           doc.setFont('helvetica', 'normal');
           y += 13;
           continue;

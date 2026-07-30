@@ -37,7 +37,7 @@ export function checkFeasibility(responders, avoidancePairs = [], preferredPairs
     if (patterns.length === 0) noPattern.push({ name: r.name, reason });
   }
   for (const { name, reason } of noPattern) {
-    errors.push(`${name}: cannot be scheduled — ${reason}`);
+    errors.push(`${name}: cannot be scheduled - ${reason}`);
   }
 
   // 2) Total hour capacity vs. the coverage window.
@@ -125,7 +125,7 @@ export function checkFeasibility(responders, avoidancePairs = [], preferredPairs
       );
     }
     if (availableBySlot[id] === MIN_PER_SHIFT) {
-      warnings.push(`${label}: exactly ${MIN_PER_SHIFT} responders available — they must all be scheduled here.`);
+      warnings.push(`${label}: exactly ${MIN_PER_SHIFT} responders available - they must all be scheduled here.`);
     }
   }
 
@@ -166,7 +166,7 @@ export function checkFeasibility(responders, avoidancePairs = [], preferredPairs
       const overlap = usableSlots(rB).filter((id) => usableA.has(id));
       if (overlap.length === 0) continue;
       // If A and B each have only one possible pattern and it shares slots,
-      // an overlap is unavoidable — flag it.
+      // an overlap is unavoidable - flag it.
       const patsA = buildPatterns(rA).patterns;
       const patsB = buildPatterns(rB).patterns;
       if (patsA.length === 1 && patsB.length === 1) {
@@ -175,7 +175,7 @@ export function checkFeasibility(responders, avoidancePairs = [], preferredPairs
           warnings.push(
             `${rA.name} & ${rB.name}: their only possible patterns overlap on ${shared
               .map((id) => id.replace('|', ' '))
-              .join(', ')} — the "avoid together" preference can't be met.`
+              .join(', ')} - the "avoid together" preference can't be met.`
           );
         }
       }

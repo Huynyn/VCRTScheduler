@@ -7,7 +7,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
         <img
           src={logoUrl}
-          alt="VCRT — ÉBIC crest"
+          alt="VCRT - ÉBIC crest"
           className="h-12 w-12 object-contain shrink-0"
         />
         <div className="min-w-0">
@@ -15,7 +15,7 @@ export default function Header() {
             VCRT Shift Scheduler
           </h1>
           <p className="text-sm text-gray-500 leading-tight truncate">
-            University of Ottawa — Volunteer Crisis Response Team
+            University of Ottawa - Volunteer Crisis Response Team
           </p>
         </div>
         <div className="ml-auto hidden sm:flex items-center gap-2">

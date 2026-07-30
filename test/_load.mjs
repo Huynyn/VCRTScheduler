@@ -7,7 +7,7 @@ const TEXT_TO_PREF = {
   available: PREF.AVAIL, avail: PREF.AVAIL, 'high preference': PREF.HIGH, high: PREF.HIGH,
   'non-negotiable': PREF.NONNEG, 'non negotiable': PREF.NONNEG, nonnegotiable: PREF.NONNEG,
   'not available': PREF.UNAVAIL, unavailable: PREF.UNAVAIL, unavail: PREF.UNAVAIL,
-  '—': PREF.UNAVAIL, '-': PREF.UNAVAIL, '': PREF.UNAVAIL,
+  '-': PREF.UNAVAIL, '-': PREF.UNAVAIL, '': PREF.UNAVAIL,
 };
 const PREF_FILL = { [PREF.AVAIL]: '16A34A', [PREF.HIGH]: '2563EB', [PREF.NONNEG]: 'DC2626' };
 const FILL_TO_PREF = Object.fromEntries(Object.entries(PREF_FILL).map(([p, h]) => [h.toUpperCase(), p]));

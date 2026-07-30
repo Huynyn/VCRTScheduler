@@ -51,7 +51,7 @@ export default function ResponderList({ onEdit, editingId }) {
     try {
       const { responders: imported, warnings } = await importRosterXlsx(file);
       // Importing generates fresh ids, so any existing pairing rules (keyed by
-      // id) would dangle — clear them alongside the roster.
+      // id) would dangle - clear them alongside the roster.
       loadAll(imported, [], []);
       setNotice({
         type: warnings.length ? 'warning' : 'success',

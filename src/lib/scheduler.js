@@ -302,7 +302,7 @@ function attempt(responders, byId, patternMap, seed, avoidByRid, preferByRid, pr
     const fitPool = fitting.length ? fitting : candidates;
     // Hard keep-apart: only consider patterns that don't seat this person with a
     // co-worker they must be kept apart from. Fall back to the full pool only
-    // when every fitting pattern would create a conflict (best-effort — that
+    // when every fitting pattern would create a conflict (best-effort - that
     // schedule then reads as invalid and the coordinator gets a message).
     const conflictFree = fitPool.filter(
       (p) => !patternCreatesConflict(r, p, slots, avoidByRid)
@@ -355,7 +355,7 @@ const MAX_ALTS_PER_MOVE = 24;
 const patKey = (p) => [...p].sort().join(',');
 
 // Swap two responders' entire patterns. Every shift keeps exactly the same head
-// count, so a swap can never break the minimum-coverage rule — only the role /
+// count, so a swap can never break the minimum-coverage rule - only the role /
 // language / gender mix changes, and evaluate() judges that. This is the move
 // that lets a "schedule together" pair join up in an already-full week.
 function swapCandidates(rid, partnerId, assignment, patternMap) {
@@ -428,7 +428,7 @@ function polishPreferredPairs(item, responders, byId, patternMap, avoidancePairs
           unplace(r, slots, trial);
           if (!patternFits(alt, slots)) continue;
           place(r, alt, slots, trial);
-          // Backfill any shift the move left short — but never by moving `r`
+          // Backfill any shift the move left short - but never by moving `r`
           // back off their partner's shift.
           repair(others, byId, patternMap, slots, trial, makeRng(alt.length + 7), avoidByRid);
           const e = evaluate(trial, responders, avoidancePairs, preferredPairs);
@@ -463,27 +463,29 @@ export function generateSchedules(responders, options = {}) {
     // is itself part of an unlock search, to avoid infinite recursion.
     noUnlockSearch = false,
     // Internal: stop the moment ONE valid schedule is found. Used by the reach-out
-    // search, which only needs to know whether a complete schedule is reachable —
+    // search, which only needs to know whether a complete schedule is reachable -
     // so a successful check returns fast and only true dead-ends spend the budget.
     stopOnFirstValid = false,
-    // How long the reach-out search may run (it re-solves many times). Generous
-    // by default — a thorough answer is worth the wait, and it stops early the
-    // moment it finds fixes, so only genuinely-hard rosters spend the full budget.
-    reachoutBudgetMs = 30000,
+    // How long the reach-out search may run (it re-solves many times). Deliberately
+    // large: completeness matters more than latency here, so we let the exhaustive
+    // every-shift, every-person search run for minutes if it needs to. It still
+    // stops the moment the search space is exhausted, so easy rosters finish fast.
+    reachoutBudgetMs = 300000,
     // Per-check budget for a single reach-out re-solve. A successful check returns
-    // as soon as it finds one valid schedule; this is really the ceiling for
-    // confirming that a particular change DOESN'T work.
-    reachoutCheckMs = 1500,
+    // as soon as it finds one valid schedule; this is the ceiling for a check that
+    // DOESN'T pan out. Comfortably above the time a genuine fix takes to surface,
+    // so no real fix is missed for want of a moment more search.
+    reachoutCheckMs = 3000,
     // Completeness backstop: after the greedy pass, if NO fully valid schedule was
     // found, ask the exact solver whether one exists and adopt it if so. The
     // greedy is incomplete on tight rosters, so without this the app can report
     // "no complete schedule" (and drop real reach-out fixes) when a valid schedule
     // is actually reachable. Kept optional so callers can disable it.
     exactFallback = true,
-    // Time budget for that exact backstop. Small by default in the fast
-    // reach-out reachability checks (stopOnFirstValid), larger for a top-level
-    // solve where a correct verdict is worth a moment's wait.
-    exactBudgetMs = stopOnFirstValid ? 1200 : 3000,
+    // Time budget for that exact backstop. On a top-level solve we want a correct
+    // verdict even on a hard, tight roster (proving/finding one can take many
+    // seconds), so this is generous; the fast reachability checks keep it small.
+    exactBudgetMs = stopOnFirstValid ? 2000 : 30000,
     // Optional progress callback, called with a fraction in [0, 1].
     onProgress = null,
   } = options;
@@ -605,7 +607,7 @@ export function generateSchedules(responders, options = {}) {
   // rosters it can fail to construct a valid schedule even when one exists (it
   // never lands the exact per-shift partition a zero-slack week demands). If it
   // produced no valid schedule, ask the exact solver whether one is reachable and
-  // adopt it — so the app never claims "no complete schedule" when there is one,
+  // adopt it - so the app never claims "no complete schedule" when there is one,
   // and (crucially) the reach-out reachability checks below become sound.
   if (exactFallback && !all.some((v) => v.eval.valid)) {
     report(0.49);
@@ -635,7 +637,7 @@ export function generateSchedules(responders, options = {}) {
       valid: ev.valid,
     };
     // Every partial schedule carries its OWN "who to contact for availability"
-    // list, ranked by impact — reaching out to different people helps different
+    // list, ranked by impact - reaching out to different people helps different
     // near-miss schedules.
     if (!ev.valid) {
       schedule.suggestions = buildSuggestions(schedule, responders, avoidancePairs, patternMap);
@@ -664,7 +666,7 @@ export function generateSchedules(responders, options = {}) {
 
   if (!ok) {
     result.errors = [
-      `No complete schedule could be assembled — the ${schedules.length === 1 ? 'schedule' : 'schedules'} below ${schedules.length === 1 ? 'is' : 'are'} the closest possible. See "make a complete schedule possible" below.`,
+      `No complete schedule could be assembled - the ${schedules.length === 1 ? 'schedule' : 'schedules'} below ${schedules.length === 1 ? 'is' : 'are'} the closest possible. See "make a complete schedule possible" below.`,
       ...errors,
     ];
 
@@ -686,7 +688,7 @@ export function generateSchedules(responders, options = {}) {
 
     // Reachability-based reach-out: find the availability change(s) that would
     // actually make a complete schedule possible, and the schedule they unlock.
-    // Skipped when keep-apart is the sole blocker — there, the fix is to relax a
+    // Skipped when keep-apart is the sole blocker - there, the fix is to relax a
     // keep-apart pair, not to open up availability.
     if (!noUnlockSearch && !apartIsBlocker) {
       report(0.5);
@@ -696,11 +698,17 @@ export function generateSchedules(responders, options = {}) {
         avoidancePairs,
         preferredPairs,
         (f) => report(0.5 + 0.49 * f),
-        { budgetMs: reachoutBudgetMs, checkBudgetMs: reachoutCheckMs }
+        {
+          budgetMs: reachoutBudgetMs,
+          checkBudgetMs: reachoutCheckMs,
+          // All the near-miss schedules, so the search covers every shift that is
+          // short in ANY of them - not just the single best one.
+          partials: schedules.filter((s) => !s.valid),
+        }
       );
     }
   } else if (errors.length > 0) {
-    // Valid schedules found despite up-front worries — pass warnings through
+    // Valid schedules found despite up-front worries - pass warnings through
     // (checkFeasibility's errors were conservative), but keep them visible.
     result.warnings = [...warnings, ...errors];
   }
@@ -745,14 +753,14 @@ function buildSlotView(assignment, byId) {
 }
 
 // ---------------------------------------------------------------------------
-// Keep-apart diagnosis — is the "avoid together" rule itself what's blocking a
+// Keep-apart diagnosis - is the "avoid together" rule itself what's blocking a
 // complete schedule?
 //
 // Keep-apart is a hard rule, so the solver will never quietly seat two people
 // who must stay apart. But that means an over-strict set of keep-apart rules can
 // make the whole week unsolvable. When that happens the coordinator deserves a
 // straight answer: "a valid schedule IS possible, but only if you relax keeping
-// X & Y apart — here's the schedule that unlocks." This re-solves with the rules
+// X & Y apart - here's the schedule that unlocks." This re-solves with the rules
 // relaxed to find out, and pins down exactly which pair(s) are at fault.
 //
 // Returns { pairs: [{ a, b, names }], schedule } when keep-apart is the blocker,
@@ -775,7 +783,7 @@ function probeApartBlock(responders, avoidancePairs, preferredPairs, opts = {}) 
     });
 
   // 1) With NO keep-apart rules, is a complete schedule possible at all? If not,
-  //    keep-apart isn't the blocker (coverage / roster size is) — bail out and
+  //    keep-apart isn't the blocker (coverage / roster size is) - bail out and
   //    let the normal reach-out search handle it.
   const relaxedAll = solve([]);
   if (!relaxedAll.ok) return null;
@@ -788,7 +796,7 @@ function probeApartBlock(responders, avoidancePairs, preferredPairs, opts = {}) 
   }
 
   // If no single pair is individually fatal but the full set is (they interact),
-  // report the whole set — relaxing just one may not be enough.
+  // report the whole set - relaxing just one may not be enough.
   const source = culpable.length ? culpable : avoidancePairs;
   const pairs = source.map(([a, b]) => ({ a, b, names: `${nameOf(a)} & ${nameOf(b)}` }));
 
@@ -815,13 +823,13 @@ function probeApartBlock(responders, avoidancePairs, preferredPairs, opts = {}) 
 // Two-stage answer:
 //   1. Capacity check (instant, exact necessary condition). If the roster simply
 //      doesn't have enough people / supervisors / bilinguals for the week's
-//      minimum coverage, NO availability change can help — so we say exactly how
+//      minimum coverage, NO availability change can help - so we say exactly how
 //      many more you need, rather than grinding through a doomed search.
 //   2. Reachability search (thorough). When the roster is big enough in
 //      principle, we actually add availability, re-solve, and only report a fix
 //      when the re-solve produces a complete schedule that USES it. The search is
-//      exhaustive within a time budget — it never abandons a shift after a couple
-//      of tries — and it stops early the moment it finds fixes.
+//      exhaustive within a time budget - it never abandons a shift after a couple
+//      of tries - and it stops early the moment it finds fixes.
 // ---------------------------------------------------------------------------
 
 const shiftLabelFor = (id) => {
@@ -850,6 +858,26 @@ function gapSlotsWithNeeds(schedule) {
   return map;
 }
 
+// Union the short-shift needs across several near-miss schedules. Different
+// partial schedules leave different shifts short, so a fix that opens shift G
+// only surfaces if G appears as a gap in SOME candidate - searching just the
+// single best partial's gaps would miss it. Merges by taking the largest body
+// shortfall and OR-ing the role needs per slot.
+function unionGaps(schedules) {
+  const map = new Map();
+  for (const s of schedules) {
+    if (!s) continue;
+    for (const [slot, need] of gapSlotsWithNeeds(s).entries()) {
+      if (!map.has(slot)) map.set(slot, { sup: false, bil: false, people: 0 });
+      const cur = map.get(slot);
+      cur.sup = cur.sup || need.sup;
+      cur.bil = cur.bil || need.bil;
+      cur.people = Math.max(cur.people, need.people);
+    }
+  }
+  return map;
+}
+
 // People who could fill `slot` by opening availability and who hold the fixed
 // attribute the gap requires. Currently unavailable for the slot (that's the
 // only thing we can ask them to change).
@@ -861,10 +889,29 @@ function candidatesForGap(responders, slot, need) {
   return pool;
 }
 
-// Anyone currently unavailable for the slot — used to fill a plain head-count
+// Anyone currently unavailable for the slot - used to fill a plain head-count
 // gap (no role requirement) with the closest-fitting person.
 function candidatesAny(responders, slot) {
   return responders.filter((r) => r.prefs[slot] === PREF.UNAVAIL);
+}
+
+// EVERYONE who could open `slot`, ordered so the people who most plausibly
+// resolve this particular gap come first (role-holders for a role gap), but with
+// NOBODY excluded. This matters: opening a shift for a responder who ISN'T the
+// missing role can still complete the week - a plain body freeing up the tight
+// packing elsewhere is enough - so the role of the person is NOT a safe filter.
+// The only reliable test of "does opening this shift for this person complete the
+// week?" is to actually try it (solveWith does, exactly), one by one, for all of
+// them. `spareOf` optionally biases the order toward people with unused hours.
+function candidatesForSlotExhaustive(responders, slot, need, spareOf = null) {
+  const preferred = rankCandidates(candidatesForGap(responders, slot, need), slot, spareOf);
+  const preferredIds = new Set(preferred.map((r) => r.id));
+  const rest = rankCandidates(
+    candidatesAny(responders, slot).filter((r) => !preferredIds.has(r.id)),
+    slot,
+    spareOf
+  );
+  return [...preferred, ...rest];
 }
 
 const briefPerson = (p) => ({ id: p.id, name: p.name, role: p.role, bilingual: p.bilingual });
@@ -873,7 +920,7 @@ const slotHoursOf = (id) => SHIFT_BY_ID[parseSlot(id).shift].hours;
 
 // Copy the roster with availability opened up on the given shifts. `opens` is
 // [{ id, slot }, ...]. The opened shift is marked NON-NEGOTIABLE, which forces
-// the re-solve to actually place that person there — so the check reliably asks
+// the re-solve to actually place that person there - so the check reliably asks
 // "can the rest of the week complete around this person taking this shift?"
 // (rather than hoping the greedy heuristic happens to use the opening).
 function withOpened(responders, opens) {
@@ -891,14 +938,7 @@ function withOpened(responders, opens) {
   });
 }
 
-const askOf = (r, slot) => ({
-  person: briefPerson(r),
-  slot,
-  slotLabel: shiftLabelFor(slot),
-  addedHours: slotHoursOf(slot),
-});
-
-// Slots one calendar day either side of a slot (any shift) — used to prefer the
+// Slots one calendar day either side of a slot (any shift) - used to prefer the
 // people for whom opening a shift is the smallest stretch.
 function proximityScore(responder, slot) {
   const { day } = parseSlot(slot);
@@ -907,7 +947,7 @@ function proximityScore(responder, slot) {
     const p = responder.prefs[id];
     if (p !== PREF.AVAIL && p !== PREF.HIGH) return false;
     const od = parseSlot(id).day;
-    return od === day; // same day, another shift — the closest kind of stretch
+    return od === day; // same day, another shift - the closest kind of stretch
   }).length;
 }
 
@@ -915,7 +955,7 @@ function proximityScore(responder, slot) {
 // first. `spareOf(r)` is the responder's unused weekly hours in the current
 // partial schedule: someone already booked to their full 12h can't take another
 // shift without dropping one (which usually just moves the gap), so people with
-// spare hours — above all the unplaced, who have a whole week free — are the real
+// spare hours - above all the unplaced, who have a whole week free - are the real
 // fixers and must lead the list. Proximity (opening a nearby shift is the
 // smallest stretch) breaks ties, then name for stability. `spareOf` is optional;
 // without it this falls back to proximity-only ordering.
@@ -939,12 +979,12 @@ function needLabelFor(need) {
 }
 
 // ---------------------------------------------------------------------------
-// Capacity floor — exact necessary conditions on head-count and roles.
+// Capacity floor - exact necessary conditions on head-count and roles.
 //
 // Each 12h responder covers either two day shifts OR one overnight; each 6h
 // responder covers one day shift. Every shift needs MIN_PER_SHIFT people, with
 // at least one supervisor and one bilingual. These give hard lower bounds on how
-// many people (and how many supervisors / bilinguals) the week needs — bounds no
+// many people (and how many supervisors / bilinguals) the week needs - bounds no
 // amount of availability-shuffling can beat. If the roster is under one of them,
 // a complete schedule is impossible without bringing someone new in, full stop.
 // ---------------------------------------------------------------------------
@@ -994,106 +1034,111 @@ function capacityFloor(responders) {
 
 // Expand the gaps into a flat list of "openings": one per missing person-slot,
 // each with the ranked candidates who could fill it. A shift short by two bodies
-// yields two openings; a shift that only lacks a supervisor yields one opening
-// whose candidates are supervisors. The first opening on a shift carries any
-// role requirement (so it draws typed candidates); extra openings on the same
-// shift are plain head-count and draw from anyone unavailable for it.
+// yields two openings; a shift that only lacks a supervisor yields one opening.
+// Every opening draws from EVERYONE currently unavailable for that shift (a
+// non-role responder can still complete the week - see candidatesForSlotExhaustive)
+// - role-holders are merely ordered first on the opening that carries the role
+// requirement, so the combination search reaches them soonest.
 function buildOpenings(responders, rankedByGap, spareOf = null) {
   const openings = [];
   for (const { slot, need } of rankedByGap) {
     const roleNeeded = need.sup || need.bil;
     const count = Math.max(need.people, roleNeeded ? 1 : 0);
-    const typed = rankCandidates(candidatesForGap(responders, slot, need), slot, spareOf);
+    const roleFirst = candidatesForSlotExhaustive(responders, slot, need, spareOf);
     const any = rankCandidates(candidatesAny(responders, slot), slot, spareOf);
     for (let i = 0; i < count; i++) {
-      const cands = i === 0 && roleNeeded ? typed : any;
+      const cands = i === 0 && roleNeeded ? roleFirst : any;
       openings.push({ slot, cands });
     }
   }
   return openings;
 }
 
-// Search for a minimal SET of asks (one distinct person per opening) that
-// together makes a complete schedule possible. Tries the cheapest combination
-// first, then varies each opening across its best candidates, then samples more
-// broadly — all bounded by the shared time budget. Returns the first working set.
-function searchMultiFix(openings, solveWith, timeLeft, tick) {
-  const m = openings.length;
-  const sizes = openings.map((o) => o.cands.length);
-  if (sizes.some((s) => s === 0)) return null;
-
-  const tried = new Set();
-  const distinct = (vec) => {
-    const ids = vec.map((idx, i) => openings[i].cands[idx].id);
-    return new Set(ids).size === ids.length;
-  };
-  const build = (hit) => ({
-    asks: hit.vec.map((idx, i) => askOf(openings[i].cands[idx], openings[i].slot)),
-    schedule: hit.valid,
-  });
-  const attempt = (vec) => {
-    const key = vec.join(',');
-    if (tried.has(key)) return null;
-    tried.add(key);
-    if (!distinct(vec)) return null;
-    if (timeLeft() < 500) return null;
+// Can the week be completed by opening each of `remaining` for one DISTINCT
+// person (on top of `baseOpens`, already forced)? Depth-first over each opening's
+// candidates (best-first), returning the first witness schedule found - or null.
+// Bounded by the shared time budget.
+function canComplete(baseOpens, remaining, usedIds, solveWith, timeLeft, tick) {
+  if (remaining.length === 0) {
     tick();
-    const opens = vec.map((idx, i) => ({ id: openings[i].cands[idx].id, slot: openings[i].slot }));
-    const valid = solveWith(opens);
-    return valid ? { vec, valid } : null;
-  };
-
-  // 1) Cheapest distinct combination (top candidate per opening, bumping on
-  //    collisions so the same person is never asked for two openings).
-  const top = [];
-  const used = new Set();
-  for (let i = 0; i < m; i++) {
-    let idx = 0;
-    while (idx < sizes[i] && used.has(openings[i].cands[idx].id)) idx += 1;
-    if (idx >= sizes[i]) idx = 0;
-    top.push(idx);
-    used.add(openings[i].cands[idx]?.id);
+    return solveWith(baseOpens);
   }
-  let hit = attempt(top);
-  if (hit) return build(hit);
-
-  // 2) Coordinate search: vary one opening at a time across its best candidates.
-  const SPREAD = 8;
-  for (let i = 0; i < m; i++) {
-    for (let idx = 0; idx < Math.min(sizes[i], SPREAD); idx++) {
-      if (timeLeft() < 500) return null;
-      const vec = [...top];
-      vec[i] = idx;
-      hit = attempt(vec);
-      if (hit) return build(hit);
-    }
-  }
-
-  // 3) Broader randomised sampling of distinct combinations until time runs out
-  //    or the (bounded) combination space is effectively exhausted — whichever
-  //    comes first. `attempt` skips duplicates cheaply, so we stop once fresh
-  //    combinations dry up rather than busy-spinning to the deadline.
-  const rng = makeRng(0x5eed ^ m);
-  const space = openings.reduce((p, o, i) => p * Math.min(sizes[i], SPREAD), 1);
-  let staleStreak = 0;
-  while (timeLeft() > 800 && staleStreak < 400 && tried.size < space) {
-    const vec = openings.map((_, i) => Math.floor(rng() * Math.min(sizes[i], SPREAD)));
-    const before = tried.size;
-    hit = attempt(vec);
-    if (hit) return build(hit);
-    staleStreak = tried.size > before ? 0 : staleStreak + 1;
+  if (timeLeft() < 500) return null;
+  const [opening, ...rest] = remaining;
+  for (const cand of opening.cands) {
+    if (usedIds.has(cand.id)) continue;
+    if (timeLeft() < 500) return null;
+    const witness = canComplete(
+      [...baseOpens, { id: cand.id, slot: opening.slot }],
+      rest,
+      new Set([...usedIds, cand.id]),
+      solveWith,
+      timeLeft,
+      tick
+    );
+    if (witness) return witness;
   }
   return null;
 }
 
-// Reachability search — the honest answer to "who do I call so a complete
+// When no SINGLE change completes the week, find the smallest set of shifts that
+// must be opened together - and, for EACH of those shifts, EVERYONE who could open
+// it as part of a complete fix (with the other shifts opened by someone). This is
+// the thorough answer: not one example combination, but the full menu of options
+// per shift, so the coordinator sees every availability change that would work.
+// Exhaustive and uncapped within the time budget.
+function enumerateMultiFix(openings, solveWith, timeLeft, tick) {
+  const m = openings.length;
+  if (m === 0 || openings.some((o) => o.cands.length === 0)) return null;
+
+  let witness0 = null;
+  const bySlot = new Map(); // slot -> { slotLabel, count, people: Map(id -> person) }
+
+  for (let i = 0; i < m; i++) {
+    if (timeLeft() < 600) break;
+    const opening = openings[i];
+    const others = openings.filter((_, j) => j !== i);
+    let entry = bySlot.get(opening.slot);
+    if (!entry) {
+      entry = { slot: opening.slot, slotLabel: shiftLabelFor(opening.slot), count: 0, people: new Map() };
+      bySlot.set(opening.slot, entry);
+    }
+    entry.count += 1;
+    // Every person who could take THIS opening as part of a complete fix: force
+    // them here, then check the other shifts can be opened by distinct others.
+    for (const cand of opening.cands) {
+      if (timeLeft() < 600) break;
+      if (entry.people.has(cand.id)) continue;
+      const witness = canComplete(
+        [{ id: cand.id, slot: opening.slot }],
+        others,
+        new Set([cand.id]),
+        solveWith,
+        timeLeft,
+        tick
+      );
+      if (witness) {
+        entry.people.set(cand.id, { ...briefPerson(cand), schedule: witness });
+        if (!witness0) witness0 = witness;
+      }
+    }
+  }
+
+  const slots = [...bySlot.values()]
+    .filter((e) => e.people.size > 0)
+    .map((e) => ({ slot: e.slot, slotLabel: e.slotLabel, count: e.count, people: [...e.people.values()] }));
+  if (slots.length === 0) return null;
+  return { size: m, slots, schedule: witness0 };
+}
+
+// Reachability search - the honest answer to "who do I call so a complete
 // schedule becomes possible?" Returns:
 //   capacity:   the hard head-count / role floor analysis (see capacityFloor).
-//   singleFixes:[{ slot, slotLabel, needLabel, people:[…], schedule }] — shifts a
+//   singleFixes:[{ slot, slotLabel, needLabel, people:[…], schedule }] - shifts a
 //               single phone call completes, with everyone who could and a sample
 //               resulting schedule.
 //   multiFix:   { asks:[{ person, slot, slotLabel, addedHours }], schedule } | null
-//               — a minimal set of changes that together complete the week.
+//               - a minimal set of changes that together complete the week.
 //   unplaced:   people who aren't in the schedule at all.
 //   searched:   did we actually run the re-solve search? (false when capacity
 //               already rules a complete schedule out).
@@ -1107,7 +1152,10 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
   const report = (f) => onProgress && onProgress(Math.max(0, Math.min(0.99, f)));
   const tickProgress = () => report((Date.now() - start) / budgetMs);
 
-  const gaps = gapSlotsWithNeeds(bestPartial);
+  // Gaps to search: the short shifts of the best partial UNIONED with those of
+  // every other near-miss schedule, so a fix that opens a shift only some of them
+  // leave short is still considered.
+  const gaps = unionGaps([bestPartial, ...(opts.partials || [])]);
   const bodyDeficit = [...gaps.values()].reduce((s, n) => s + n.people, 0);
   const capacity = capacityFloor(responders);
 
@@ -1119,7 +1167,7 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
   // Unused weekly hours per responder in the current partial. Someone at their
   // full commitment can't absorb an opened shift without dropping another (which
   // just moves the gap), so candidate ranking leads with the people who have
-  // spare hours — the unplaced most of all. This is what makes the multi-fix
+  // spare hours - the unplaced most of all. This is what makes the multi-fix
   // search reliably find the people who can ACTUALLY complete the week.
   const targetHoursOf = (r) => (r.hours === REDUCED_HOURS ? REDUCED_HOURS : 12);
   const spareOf = (r) => {
@@ -1148,14 +1196,12 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
     return result;
   }
 
-  // Coverage is complete but someone can't be placed (< 6h available on any open
-  // slot). Nothing to "unlock" coverage-wise — the unplaced note carries this.
-  if (gaps.size === 0) {
-    report(1);
-    return result;
-  }
-
-  // Rank gaps hardest-first; keep the candidate lists for each.
+  // Rank the identified short shifts hardest-first - these are searched FIRST as
+  // the most likely place a fix lives. But they are only a priority ordering, NOT
+  // a gate: an infeasible week can also show up purely as an over-filled shift or
+  // an unplaced responder with no "gap" at all, and the exhaustive sweep below
+  // still finds the fix. So we never bail out just because no short shift was
+  // identified.
   const rankedByGap = [...gaps.entries()]
     .map(([slot, need]) => ({
       slot,
@@ -1166,15 +1212,6 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
       const sev = (g) => (g.need.sup ? 100 : 0) + (g.need.bil ? 50 : 0) + g.need.people * 10;
       return sev(b) - sev(a);
     });
-
-  // A gap literally nobody could ever fill (no one with the right fixed
-  // attributes is free to open it) is unreachable — you need someone new.
-  if (rankedByGap.some((g) => g.cands.length === 0)) {
-    result.searched = true;
-    result.exhausted = true;
-    report(1);
-    return result;
-  }
 
   const solveOpts = {
     want: 1,
@@ -1187,27 +1224,27 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
 
   // Does opening the given shifts make a COMPLETE, valid schedule possible? This
   // is the heart of "make a complete schedule possible", so it must not miss a
-  // reachable schedule. We ask the exact solver first — it is complete, and a
+  // reachable schedule. We ask the exact solver first - it is complete, and a
   // real fix usually verifies in milliseconds while a definitive 'unsat' rejects
-  // a non-fix outright — and only fall back to the greedy when the exact search
+  // a non-fix outright - and only fall back to the greedy when the exact search
   // runs out of time ('unknown'). Relying on the greedy alone (as before) is
   // exactly what dropped genuine fixes from the list.
-  const solveWith = (opens) => {
+  const solveWith = (opens, maxMs = checkBudgetMs) => {
     const opened = withOpened(responders, opens);
 
-    const tExact = Math.min(checkBudgetMs, timeLeft());
+    const tExact = Math.min(maxMs, timeLeft());
     let valid = null;
     if (tExact >= 300) {
       const ex = solveExact(opened, { avoidancePairs, budgetMs: tExact });
       if (ex.status === 'sat') {
         valid = scheduleFromAssignment(ex.assignment, byId, responders, avoidancePairs, preferredPairs);
       } else if (ex.status === 'unsat') {
-        return null; // provably no valid schedule with this opening — done.
+        return null; // provably no valid schedule with this opening - done.
       }
     }
 
     if (!valid) {
-      const tGreedy = Math.min(checkBudgetMs, timeLeft());
+      const tGreedy = Math.min(maxMs, timeLeft());
       if (tGreedy < 300) return null;
       const res = generateSchedules(opened, {
         ...solveOpts,
@@ -1223,50 +1260,105 @@ export function findUnlocks(bestPartial, responders, avoidancePairs, preferredPa
     return null;
   };
 
-  result.searched = true;
-
-  // Total openings that must be filled. A single phone call can only complete the
-  // week when that number is one (one body, one shift).
-  const openings = buildOpenings(responders, rankedByGap, spareOf);
-  const totalOpenings = openings.length;
-
-  // ---- Pass 1: single-call fixes ----
-  // Only meaningful when the week is exactly one opening short. We try EVERY
-  // candidate for that shift — no early abandonment — and list everyone who works.
-  if (totalOpenings === 1) {
-    const { slot, need } = rankedByGap[0];
-    const cands = openings[0].cands;
+  // Go one by one through everyone who could open `slot` and collect each person
+  // for whom opening that ONE shift makes a COMPLETE schedule possible. Role-blind
+  // (a plain body can complete the week by relieving the packing) and, by default,
+  // uncapped. `probeLimit` optionally stops early on shifts that clearly aren't a
+  // single-call fix (used by the wider sweep to stay within budget); `deadline`
+  // and `perCheckMs` bound the effort.
+  const collectFixers = (slot, need, { probeLimit = 0, deadlineLeft, perCheckMs = checkBudgetMs }) => {
+    const cands = candidatesForSlotExhaustive(responders, slot, need, spareOf);
     const people = [];
     let schedule = null;
-    // Cap how many unlockers we keep: each carries its own full resulting
-    // schedule (for the clickable comparison), and a dozen best-ranked options is
-    // plenty to choose from without bloating the payload or the UI. Candidates
-    // are already ordered best-first (spare hours, then proximity).
-    const MAX_UNLOCKERS = 12;
+    let tried = 0;
     for (const r of cands) {
-      if (people.length >= MAX_UNLOCKERS || timeLeft() < 400) break;
+      if (deadlineLeft() < 400) break;
+      if (probeLimit && people.length === 0 && tried >= probeLimit) break;
+      tried += 1;
       tickProgress();
-      const valid = solveWith([{ id: r.id, slot }]);
+      const valid = solveWith([{ id: r.id, slot }], perCheckMs);
       if (valid) {
         // Keep EACH unlocker's own resulting schedule so the UI can let the
-        // coordinator click between people and see the exact week each one
-        // produces if they're the one to open up this shift.
+        // coordinator click between people and see the exact week each produces.
         people.push({ ...briefPerson(r), schedule: valid });
         if (!schedule) schedule = valid;
       }
     }
+    return { people, schedule };
+  };
+
+  result.searched = true;
+
+  // Total openings that must be filled across all short shifts. When that's one,
+  // the week is a single phone call away; when it's more, a single call usually
+  // can't complete it (that's what the multi-change search is for).
+  const openings = buildOpenings(responders, rankedByGap, spareOf);
+  const totalOpenings = openings.length;
+  const multiGap = totalOpenings > 1;
+
+  // Budget phasing. Completeness is the priority (see the reach-out contract),
+  // so nothing is capped by count and every candidate is tried in full. We only
+  // partition TIME: the direct fixes (opening a short shift) and the multi-change
+  // search run first, then the wider all-shifts sweep gets the rest. Each phase
+  // hands unused time forward, so on the common (fast) rosters everything is
+  // searched exhaustively; only a genuinely intractable roster ever truncates,
+  // and then the high-value direct fixes are the part that already ran.
+  const gapPhaseEnd = start + budgetMs * 0.4;
+  const gapLeft = () => Math.min(timeLeft(), gapPhaseEnd - Date.now());
+  // The multi-change enumeration is the thorough answer when no single change
+  // works, so it gets a big slice of the budget; the wider sweep takes the tail.
+  const multiPhaseEnd = start + budgetMs * 0.85;
+  const multiLeft = () => Math.min(timeLeft(), multiPhaseEnd - Date.now());
+
+  // ---- Pass 1: single-change fixes at the short shifts ----
+  // For EVERY short shift, go one by one through EVERYONE who would have to open
+  // it (role-blind, uncapped, no early abandonment - see collectFixers) and keep
+  // each person for whom opening that ONE shift completes the week.
+  for (const { slot, need } of rankedByGap) {
+    if (gapLeft() < 400) break;
+    const { people, schedule } = collectFixers(slot, need, { deadlineLeft: gapLeft });
     if (people.length) {
-      result.singleFixes = [
-        { slot, slotLabel: shiftLabelFor(slot), needLabel: needLabelFor(need), people, schedule },
-      ];
+      result.singleFixes.push({
+        slot,
+        slotLabel: shiftLabelFor(slot),
+        needLabel: needLabelFor(need),
+        people,
+        schedule,
+      });
     }
   }
 
   // ---- Pass 2: minimal multi-call fix ----
-  // Fill every opening at once, searching candidate combinations until a set
-  // makes a complete schedule possible. Bounded by the shared time budget.
+  // No single change completes a short shift, so find the smallest set of shifts
+  // that must be opened together - and, for EACH, EVERYONE who could open it as
+  // part of a complete fix (not just one example combination).
   if (result.singleFixes.length === 0 && totalOpenings >= 1 && totalOpenings <= 6) {
-    result.multiFix = searchMultiFix(openings, solveWith, timeLeft, tickProgress);
+    result.multiFix = enumerateMultiFix(openings, solveWith, multiLeft, tickProgress);
+  }
+
+  // ---- Pass 3: wide sweep over every OTHER shift ----
+  // Closes the last gap in exhaustiveness: a single change can also complete the
+  // week by opening a shift that ISN'T currently short - a plain body there frees
+  // the packing so a supervisor can move to cover the real gap ("displacement"
+  // fix). So we try opening every remaining shift too, one by one for EVERYONE,
+  // with the same full per-check budget - no early-stop, since a genuine fixer can
+  // be ranked anywhere. Fixes found here are flagged `indirect` (the shift they
+  // open isn't the one that was short). Bounded only by the overall time budget.
+  for (const slot of ALL_SLOTS) {
+    if (gaps.has(slot)) continue; // already searched in full above
+    if (timeLeft() < 400) break;
+    if (candidatesAny(responders, slot).length === 0) continue;
+    const { people, schedule } = collectFixers(slot, {}, { deadlineLeft: timeLeft });
+    if (people.length) {
+      result.singleFixes.push({
+        slot,
+        slotLabel: shiftLabelFor(slot),
+        needLabel: needLabelFor({}),
+        indirect: true,
+        people,
+        schedule,
+      });
+    }
   }
 
   result.exhausted = result.singleFixes.length === 0 && !result.multiFix;

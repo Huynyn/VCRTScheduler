@@ -40,7 +40,7 @@ const isAvail = (r, id) => r.prefs[id] === PREF.AVAIL || r.prefs[id] === PREF.HI
 
 // How many hours of the responder's week are already assigned in THIS schedule.
 // A person a full pattern (12h) has no room left, so asking them to open up
-// another slot would push them over their weekly cap — we never do that.
+// another slot would push them over their weekly cap - we never do that.
 function assignedHoursMap(schedule, responders) {
   const m = {};
   for (const r of responders) {
@@ -59,12 +59,12 @@ function reasonPhrase(responder, slot, remaining) {
   if (near.length > 0) {
     return `Already available ${shiftLabel(near[0])}; this ${sh}h shift fits their ${remaining}h of unused time.`;
   }
-  return `Has ${remaining}h of unused availability this week — room for this ${sh}h shift.`;
+  return `Has ${remaining}h of unused availability this week - room for this ${sh}h shift.`;
 }
 
 // Weights for the person-level "who to contact" impact ranking. A missing
 // supervisor is the hardest gap to substitute, then a missing bilingual, then a
-// plain head-count shortfall. Only availability can be asked for — a responder
+// plain head-count shortfall. Only availability can be asked for - a responder
 // only counts toward a role gap when they ALREADY hold that fixed attribute
 // (supervisor role, bilingual), so this list never implies changing someone's
 // designation, languages spoken or gender.
@@ -86,7 +86,7 @@ function buildImpactRanking(gapMap, responders, assigned) {
   const people = [];
   for (const r of responders) {
     const remaining = targetHours(r) - (assigned[r.id] || 0);
-    if (remaining <= 0) continue; // already at their weekly hours — can't help without overloading them
+    if (remaining <= 0) continue; // already at their weekly hours - can't help without overloading them
 
     // Every gap slot they could take: right fixed attributes, currently
     // unavailable (so opening it is a real change), and short enough to fit
@@ -120,7 +120,7 @@ function buildImpactRanking(gapMap, responders, assigned) {
     if (candidateGaps.length === 0) continue;
 
     // Greedily fill their unused hours with the highest-value gaps first, so the
-    // impact reflects what they could ACTUALLY take on — never more than their
+    // impact reflects what they could ACTUALLY take on - never more than their
     // weekly hours allow.
     candidateGaps.sort((a, b) => b.w - a.w);
     let hoursLeft = remaining;
@@ -171,7 +171,7 @@ function buildImpactRanking(gapMap, responders, assigned) {
 
 // The four ways a gap can be filled, phrased as the exact question to put to the
 // roster. The candidate pool for each only ever contains people who ALREADY hold
-// the required fixed attributes — we can ask them to change their availability,
+// the required fixed attributes - we can ask them to change their availability,
 // never their role, languages or gender.
 const ASK_META = {
   bilsup: {
@@ -196,7 +196,7 @@ const ASK_META = {
 // contact for extra availability" suggestions, plus a person-level impact
 // ranking (most impactful availability change first). Softest rules (avoidance,
 // weekend doubles, overnight gender mix) are treated as nice-to-haves and are
-// not reported as gaps here — this list is strictly for the hard-rule gaps that
+// not reported as gaps here - this list is strictly for the hard-rule gaps that
 // keep the schedule from being valid.
 export function buildSuggestions(schedule, responders, avoidancePairs, patternMap) {
   if (!schedule) return { gapCount: 0, gaps: [], people: [] };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyRound, PhoneCall, UserPlus, ArrowRight, Lock, ChevronDown, Users } from 'lucide-react';
+import { KeyRound, PhoneCall, UserPlus, Lock, ChevronDown, Users } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../common/Card.jsx';
 import ScheduleTable from './ScheduleTable.jsx';
 
@@ -27,7 +27,7 @@ function UnplacedNote({ unplaced }) {
         <div className="text-xs text-gray-500 mt-0.5">
           Their current availability can't form a full, legal week (a 12h responder needs two day
           shifts or one overnight; a 6h responder needs one day shift). Each needs to open up more
-          availability — see the specific reason for each person in the report above.
+          availability - see the specific reason for each person in the report above.
         </div>
       </div>
     </div>
@@ -49,9 +49,21 @@ function SingleFix({ fix, defaultOpen }) {
     <div className="rounded-lg border border-success-200 overflow-hidden">
       <div className="bg-success-50/60 px-3 py-2.5">
         <div className="text-sm text-secondary-700">
-          <span className="font-semibold">{fix.slotLabel}</span> is short {fix.needLabel}. It becomes
-          possible if <span className="font-semibold">any one</span> of these opens up that shift —{' '}
-          <span className="font-medium">click a name</span> to see the schedule it produces:
+          {fix.indirect ? (
+            <>
+              Opening <span className="font-semibold">{fix.slotLabel}</span> completes the week - this
+              shift isn&apos;t short itself, but opening it resolves the conflict that&apos;s blocking a
+              full schedule. It works if <span className="font-semibold">any one</span> of these opens
+              up that shift - <span className="font-medium">click a name</span> to see the schedule it
+              produces:
+            </>
+          ) : (
+            <>
+              <span className="font-semibold">{fix.slotLabel}</span> is short {fix.needLabel}. It
+              becomes possible if <span className="font-semibold">any one</span> of these opens up that
+              shift - <span className="font-medium">click a name</span> to see the schedule it produces:
+            </>
+          )}
         </div>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {fix.people.map((p) => {
@@ -95,28 +107,71 @@ function SingleFix({ fix, defaultOpen }) {
   );
 }
 
-// A minimal SET of changes (one person per short shift) that together completes
-// the week — shown when no single change is enough on its own.
+// When no single change is enough, the week needs SEVERAL shifts opened together.
+// For each such shift we show EVERYONE who could open it as part of a complete fix
+// (not one example), so the coordinator sees the full menu and can pick any one
+// person per shift. Clicking a name shows the exact schedule that choice produces.
 function MultiFix({ fix }) {
+  const slots = fix.slots || [];
   const [open, setOpen] = useState(true);
+  const [sel, setSel] = useState(() => {
+    const first = slots.find((s) => s.people.length);
+    return first ? { slot: first.slot, id: first.people[0].id } : null;
+  });
+  if (slots.length === 0) return null;
+
+  let selPerson = null;
+  for (const s of slots) {
+    if (s.slot !== sel?.slot) continue;
+    const p = s.people.find((x) => x.id === sel?.id);
+    if (p) selPerson = { ...p, slotLabel: s.slotLabel };
+  }
+  const shown = selPerson?.schedule || fix.schedule;
+
   return (
     <div className="rounded-lg border border-success-200 overflow-hidden">
       <div className="bg-success-50/60 px-3 py-2.5">
-        <div className="text-sm font-medium text-secondary-700 mb-1">
-          No single change is enough, but these {fix.asks.length} together complete the week:
+        <div className="text-sm text-secondary-700 mb-2">
+          No single change is enough - you&apos;ll need to open <span className="font-semibold">all {slots.length}</span>{' '}
+          of these shifts. For each, here&apos;s <span className="font-semibold">everyone</span> who could open it
+          as part of a complete fix - <span className="font-medium">click a name</span> to see the schedule it
+          produces (pick any one person per shift):
         </div>
-        <ul className="space-y-1">
-          {fix.asks.map((a) => (
-            <li key={a.slot} className="flex items-start gap-2 text-sm text-secondary-700">
-              <ArrowRight size={15} className="mt-0.5 shrink-0 text-success-600" />
-              <span>
-                Ask <span className="font-semibold">{a.person.name}</span>
-                <PersonTags person={a.person} /> to open{' '}
-                <span className="font-semibold">{a.slotLabel}</span> (a {a.addedHours}h shift).
-              </span>
-            </li>
+        <div className="space-y-2.5">
+          {slots.map((s) => (
+            <div key={s.slot}>
+              <div className="text-xs font-semibold text-secondary-700 mb-1">
+                {s.slotLabel}
+                {s.count > 1 ? ` - needs ${s.count} people` : ''}{' '}
+                <span className="font-normal text-gray-500">- any of ({s.people.length}):</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {s.people.map((p) => {
+                  const isSel = sel?.id === p.id && sel?.slot === s.slot;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setSel({ slot: s.slot, id: p.id });
+                        setOpen(true);
+                      }}
+                      aria-pressed={isSel}
+                      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-sm transition-colors ${
+                        isSel
+                          ? 'border-success-500 bg-success-500 text-white'
+                          : 'border-success-200 bg-white text-secondary-700 hover:bg-success-50'
+                      }`}
+                    >
+                      {p.name}
+                      {!isSel && <PersonTags person={p} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
       <button
         onClick={() => setOpen((v) => !v)}
@@ -124,10 +179,11 @@ function MultiFix({ fix }) {
       >
         <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
         {open ? 'Hide' : 'Show'} the schedule this creates
+        {selPerson ? ` (with ${selPerson.name} on ${selPerson.slotLabel})` : ''}
       </button>
-      {open && (
+      {open && shown && (
         <div className="p-3 border-t border-success-100">
-          <ScheduleTable schedule={fix.schedule} />
+          <ScheduleTable schedule={shown} />
         </div>
       )}
     </div>
@@ -151,7 +207,7 @@ function CapacityShortfall({ capacity }) {
 }
 
 // Shown when no complete schedule is possible. Leads with concrete, verified
-// unlocks — "open this shift and THIS complete schedule becomes possible" — and
+// unlocks - "open this shift and THIS complete schedule becomes possible" - and
 // otherwise says plainly what stands in the way (either a hard shortage of
 // people, or that no availability change on the current roster is enough).
 export default function UnlockPanel({ result }) {
@@ -202,7 +258,7 @@ export default function UnlockPanel({ result }) {
                 <UserPlus size={18} className="text-warning-600" /> A few people can&apos;t be placed
               </span>
             }
-            subtitle="Every shift is covered, but these responders can't be given a full, legal week from their current availability (a 12h responder needs two day shifts or one overnight). They'll each need to open up more availability to be included — the report above says exactly what each one needs."
+            subtitle="Every shift is covered, but these responders can't be given a full, legal week from their current availability (a 12h responder needs two day shifts or one overnight). They'll each need to open up more availability to be included - the report above says exactly what each one needs."
           />
           <CardBody>
             <UnplacedNote unplaced={unplaced} />
@@ -257,7 +313,7 @@ export default function UnlockPanel({ result }) {
           <Lock size={14} className="mt-0.5 shrink-0 text-gray-400" />
           <span>
             Below is an example shift that becomes possible if you ask these people to open up their
-            availability. Every schedule shown still obeys all the original rules — including that
+            availability. Every schedule shown still obeys all the original rules - including that
             each person works their <strong>exact</strong> weekly commitment (6h or 12h, never under
             or over).
           </span>

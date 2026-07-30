@@ -43,7 +43,7 @@ const UNDER_HOURS_PENALTY = 70000; // per responder scheduled below their commit
 // may never share a shift in a valid schedule. The penalty is priced in the same
 // tier as coverage/role violations (and above them, so the solver would rather
 // leave a shift short than force two people together), and any overlap at all
-// makes the schedule invalid — see `valid` below.
+// makes the schedule invalid - see `valid` below.
 const AVOIDANCE_PENALTY = 120000; // per shift a keep-apart pair shares (hard rule)
 
 // Soft-rule penalties (small, so honouring these is a preference not a rule).
@@ -55,7 +55,7 @@ const WEEKEND_DOUBLE_PENALTY = 200; // per responder doing 2 weekend day shifts
 // earn a small additional bonus.
 // Worth a little more than one honoured high-preference slot (1000), so the
 // solver will trade at most one person's high preference to bring a pair
-// together — never coverage, roles or "keep apart" rules, which cost far more.
+// together - never coverage, roles or "keep apart" rules, which cost far more.
 const PREFERRED_MATCH_BONUS = 1200; // per pair sharing >= 1 shift
 const PREFERRED_EXTRA_BONUS = 60; // per additional shared shift beyond the first
 
@@ -226,14 +226,14 @@ export function evaluate(assignment, responders, avoidancePairs = [], preferredP
 
   // Everyone who IS scheduled must hit their committed weekly hours (12h, or 6h
   // for reduced-hours volunteers). Legal patterns are exact-hours, so this only
-  // catches the reduced fallback — a 12h responder whose availability can't form
+  // catches the reduced fallback - a 12h responder whose availability can't form
   // a legal 12h week and who was placed on a single 6h shift instead. That
   // silently breaks their commitment, so it's a hard rule: such a schedule is
   // NOT valid (and the reach-out will never offer it as a "fix").
   const underHoursIds = responders
     .filter((r) => {
       const slots = assignment[r.id] || [];
-      if (slots.length === 0) return false; // benched — counted as `unplaced`
+      if (slots.length === 0) return false; // benched - counted as `unplaced`
       const worked = slots.reduce((s, id) => s + slotHoursOf(id), 0);
       return worked < committedHours(r);
     })
@@ -281,7 +281,7 @@ export function evaluate(assignment, responders, avoidancePairs = [], preferredP
     issues.missingBil.length === 0 &&
     unplaced === 0 &&
     underHours === 0 && // everyone must reach their committed weekly hours
-    avoidanceCount === 0; // keep-apart is a hard rule — any overlap invalidates
+    avoidanceCount === 0; // keep-apart is a hard rule - any overlap invalidates
 
   return {
     score,
