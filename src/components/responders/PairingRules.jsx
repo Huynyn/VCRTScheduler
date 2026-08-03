@@ -64,7 +64,7 @@ function PairSection({ icon, tone, title, hint, pairs, byId, sorted, onAdd, onRe
           ))}
         </select>
         <Button
-          variant={tone === 'danger' ? 'outline' : 'success'}
+          variant={tone === 'danger' ? 'danger' : 'success'}
           className="!px-3 !py-1.5 shrink-0"
           onClick={submit}
           disabled={!canAdd}

@@ -109,6 +109,8 @@ function drawHeader(doc, logo, { term, optionLabel, generatedAt, partial }) {
   doc.setTextColor(...BLACK);
 }
 
+const TIME_COL_W = 46;
+
 function drawScheduleGrid(doc, schedule, startY) {
   const head = [['Time', ...DAYS.map((d) => DAY_LABELS[d])]];
 
@@ -123,6 +125,13 @@ function drawScheduleGrid(doc, schedule, startY) {
     });
     return row;
   });
+
+  // All day columns share one width so every day reads at the same size.
+  const pageW = doc.internal.pageSize.getWidth();
+  const dayColW = (pageW - MARGIN * 2 - TIME_COL_W) / DAYS.length;
+  const dayColumnStyles = Object.fromEntries(
+    DAYS.map((_, dIdx) => [dIdx + 1, { cellWidth: dayColW }])
+  );
 
   autoTable(doc, {
     head,
@@ -152,7 +161,8 @@ function drawScheduleGrid(doc, schedule, startY) {
       lineWidth: 0.9,
     },
     columnStyles: {
-      0: { cellWidth: 46, halign: 'center', fontStyle: 'bold', fontSize: 10.5 },
+      0: { cellWidth: TIME_COL_W, halign: 'center', fontStyle: 'bold', fontSize: 10.5 },
+      ...dayColumnStyles,
     },
     didDrawCell: (data) => {
       if (data.section !== 'body' || data.column.index === 0) return;
